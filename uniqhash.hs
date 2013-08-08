@@ -2,7 +2,7 @@
 {-# LANGUAGE TupleSections #-}
 
 import Control.Exception
-import System.IO.Error
+import GHC.IO.Exception
 import Control.Monad
 import Control.Arrow
 import Control.Applicative
@@ -42,6 +42,8 @@ mapML f (a:as) = liftM2 (:) (f a) (unsafeInterleaveIO (mapML f as))
 
 readIfExists :: FilePath -> IO B.ByteString
 readIfExists fileName = B.readFile fileName `catch` handler
-  where handler e
-          | isDoesNotExistError e = return ""
-          | otherwise             = throwIO e
+
+handler :: IOException -> IO B.ByteString
+handler e = case ioe_type e of InappropriateType -> hPutStrLn stderr ("Error: " ++ show e) >> return ""
+                               NoSuchThing       -> hPutStrLn stderr ("Error: " ++ show e) >> return ""
+                               _                 -> throwIO e
