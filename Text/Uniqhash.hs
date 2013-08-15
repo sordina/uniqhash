@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
 
+module Text.Uniqhash (uniqmd5) where
+
 import Control.Exception
 import GHC.IO.Exception
 import Control.Monad
@@ -12,13 +14,6 @@ import System.IO.Unsafe (unsafeInterleaveIO)
 
 import qualified Data.ByteString as B
 import qualified Data.Map        as M
-
-main :: IO ()
-main = hSetBuffering stdin  LineBuffering
-   >>  hSetBuffering stdout LineBuffering
-   >>  getContents
-   >>= uniqmd5 . lines
-   >>= mapM_ putStrLn
 
 uniqmd5 :: [String] -> IO [String]
 uniqmd5 = fmap (dedup . (id &&& maps)) . mapML check
