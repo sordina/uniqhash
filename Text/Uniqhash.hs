@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
 
+-- | A library for checking that the contents of files have changed.
+
 module Text.Uniqhash (uniqmd5) where
 
 import Control.Exception
@@ -15,6 +17,9 @@ import System.IO.Unsafe (unsafeInterleaveIO)
 import qualified Data.ByteString as B
 import qualified Data.Map        as M
 
+-- | Takes a lazy-list of filenames and for each filename,
+-- checks if the contents of that file have changed, and if so,
+-- outputs the filename.
 uniqmd5 :: [String] -> IO [String]
 uniqmd5 = fmap (dedup . (id &&& maps)) . mapML check
 
