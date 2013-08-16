@@ -41,5 +41,5 @@ library
   build-depends: base ==4.6.*, containers >= 0.5, bytestring >= 0.10, nano-md5 >= 0.1
 
 executable uniqhash
-  main-is: Main.hs
+  main-is: Uniqhash.hs
   build-depends: base ==4.6.*, containers >= 0.5, bytestring >= 0.10, nano-md5 >= 0.1

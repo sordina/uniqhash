@@ -1,6 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
-
 module Main (main) where
 
 import Text.Uniqhash (uniqmd5)
