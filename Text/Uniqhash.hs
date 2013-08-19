@@ -41,10 +41,15 @@ mapML _ [] = return []
 mapML f (a:as) = liftM2 (:) (f a) (unsafeInterleaveIO (mapML f as))
 
 readIfExists :: FilePath -> IO B.ByteString
-readIfExists fileName = if null fileName then return ""
-                                         else B.readFile fileName `catch` handler
+readIfExists fileName = if blank fileName then return ""
+                                          else B.readFile fileName `catch` handler
 
 handler :: IOException -> IO B.ByteString
 handler e = case ioe_type e of InappropriateType -> hPutStrLn stderr ("Error: " ++ show e) >> return ""
                                NoSuchThing       -> hPutStrLn stderr ("Error: " ++ show e) >> return ""
                                _                 -> throwIO e
+
+blank :: String -> Bool
+blank ""       = True
+blank (' ':xs) = blank xs
+blank _        = False
