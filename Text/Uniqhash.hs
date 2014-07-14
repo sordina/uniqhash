@@ -26,6 +26,7 @@ uniqmd5 = fmap (dedup . (id &&& maps)) . mapML check
 hashBStoString :: B.ByteString -> MD5Digest
 hashBStoString = hash'
 
+-- TODO: Show might be less efficient here than another function...
 check :: String -> IO (String, String)
 check s = (s,) . show . hashBStoString <$> readIfExists s
 
