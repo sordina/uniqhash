@@ -10,9 +10,9 @@ import GHC.IO.Exception
 import Control.Monad
 import Control.Arrow
 import Control.Applicative
-import Data.Digest.OpenSSL.MD5
 import System.IO
 import System.IO.Unsafe (unsafeInterleaveIO)
+import Data.Digest.Pure.MD5
 
 import qualified Data.ByteString as B
 import qualified Data.Map        as M
@@ -23,8 +23,11 @@ import qualified Data.Map        as M
 uniqmd5 :: [String] -> IO [String]
 uniqmd5 = fmap (dedup . (id &&& maps)) . mapML check
 
+hashBStoString :: B.ByteString -> MD5Digest
+hashBStoString = hash'
+
 check :: String -> IO (String, String)
-check s = (s,) . md5sum <$> readIfExists s
+check s = (s,) . show . hashBStoString <$> readIfExists s
 
 dedup :: (Ord a, Eq b) => ([(a,b)], [M.Map a b]) -> [a]
 dedup = concat . uncurry (zipWith look)
