@@ -1,12 +1,12 @@
 module Main (main) where
 
-import Text.Uniqhash (uniqmd5)
+import qualified Text.Uniqhash as U
+import qualified Conduit       as C
 import System.IO
 
 main :: IO ()
-main = hSetBuffering stdin  LineBuffering
-   >>  hSetBuffering stdout LineBuffering
-   >>  hSetBuffering stderr LineBuffering
-   >>  getContents
-   >>= uniqmd5 . lines
-   >>= mapM_ putStrLn
+main = do
+  hSetBuffering stdin  LineBuffering
+  hSetBuffering stdout LineBuffering
+  hSetBuffering stderr LineBuffering
+  C.runConduit U.process
