@@ -25,7 +25,7 @@ process = stdinC
        .| linesUnboundedC
        .| filterC (not . null)
        .| changedFiles
-       .| stdoutC
+       .| stdoutC'
 
 -- Test
 
@@ -85,3 +85,9 @@ logExceptions c = catchC c (logExceptionThen (logExceptions c))
 
 logExceptionThen :: Conduit a IO b -> Control.Exception.SomeException -> Conduit a IO b
 logExceptionThen c e = liftIO (hPutStrLn stderr (show e)) >> c
+
+stdoutC' :: ConduitM String o IO ()
+stdoutC' = do
+  ml <- await
+  case ml of Just l  -> liftIO (putStrLn l) >> stdoutC'
+             Nothing -> return ()
