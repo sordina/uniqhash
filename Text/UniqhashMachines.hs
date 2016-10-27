@@ -41,7 +41,6 @@ changedFiles = splitProdPair echo hashPipe
             ~> interest
             ~> filterMaybe
 
--- TODO: Rewrite in terms of mergeProd
 splitProdPair :: Monad m => ProcessT m a b -> ProcessT m a c -> ProcessT m a (b,c)
 splitProdPair = mergeProd echo
 
