@@ -9,12 +9,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE InstanceSigs #-}
 
--- | A library for checking that the contents of files have changed.
-
--- module Text.UniqhashMachines (changedFiles, pipeline, main) where
-
--- TODO: Switch from Crypto.Hash to Cryptonite https://hackage.haskell.org/package/cryptonite-0.20/docs/Crypto-Hash-Algorithms.html
---
 -- https://github.com/acowley/concurrent-machines/issues/3
 
 module Data.Machine.MealyM where
@@ -68,8 +62,8 @@ instance Monad m => Arrow (MealyM m) where
     do (b, n) <- m a
        return ((b, c), (first n))
 
-autoMealyM :: Monad m => MealyM m a b -> ProcessT m a b
-autoMealyM = construct . go
+autoMealyMImpl :: Monad m => MealyM m a b -> ProcessT m a b
+autoMealyMImpl = construct . go
   where
   go (MealyM f) = do
     a      <- await
@@ -78,7 +72,7 @@ autoMealyM = construct . go
     go m
 
 class AutomatonM x where
-  autoM :: Monad m => x m a b -> ProcessT m a b
+  autoMealyM :: Monad m => x m a b -> ProcessT m a b
 
 instance AutomatonM MealyM where
-  autoM = autoMealyM
+  autoMealyM = autoMealyMImpl

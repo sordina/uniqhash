@@ -20,6 +20,7 @@ import Data.Machine
 import System.IO.Machine
 import System.Directory (doesFileExist)
 import Debug.Trace
+import Data.Machine.MealyM
 
 import qualified Crypto.Hash         as CH
 import qualified Data.ByteString     as BS
