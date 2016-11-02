@@ -72,7 +72,7 @@ arrM f = r where r = MealyM $ \a -> fmap (,r) (f a)
 -- TODO: Mealy -> MealyM
 
 scanMealy :: Monad m => (a -> b -> a) -> a -> MealyM m b a
-scanMealy f a = MealyM (\b -> let x = f a b in return (x, scanMealy f x))
+scanMealy f a = MealyM (\b -> return (a, scanMealy f (f a b)))
 
 -- TODO
 scanMealyM :: Monad m => (a -> b -> m a) -> a -> MealyM m (k b) a
