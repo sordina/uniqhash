@@ -8,7 +8,6 @@
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE ExistentialQuantification #-}
 
 -- https://github.com/acowley/concurrent-machines/issues/3
 
@@ -19,6 +18,7 @@ import Control.Arrow
 import Data.Pointed
 import qualified Control.Category as C
 import Control.Monad.Trans
+import Control.Monad.Identity
 
 newtype MealyM m a b = MealyM { runMealyM :: a -> m (b, MealyM m a b) }
 
@@ -62,6 +62,9 @@ instance Monad m => Arrow (MealyM m) where
   first (MealyM m) = MealyM $ \(a,c) ->
     do (b, n) <- m a
        return ((b, c), (first n))
+
+arrPure :: (a -> b) -> MealyM Identity a b
+arrPure = arr
 
 arrM :: Functor m => (a -> m b) -> MealyM m a b
 arrM f = r where r = MealyM $ \a -> fmap (,r) (f a)
