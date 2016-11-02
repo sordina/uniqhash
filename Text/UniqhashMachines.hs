@@ -37,10 +37,10 @@ pipeline = sourceHandle byLine stdin
         ~> sinkIO putStrLn
 
 changedFiles :: ProcessT IO FilePath FilePath
-changedFiles = autoMealyM (hashAndCache >>> detectChanges) ~> filterJust
+changedFiles = autoMealyM (fingerprint >>> detectChanges) ~> filterJust
 
-hashAndCache :: MealyM IO FilePath (FilePath, Maybe HASH)
-hashAndCache = arr id &&& hashPipe
+fingerprint :: MealyM IO FilePath (FilePath, Maybe HASH)
+fingerprint = arr id &&& hashPipe
 
 detectChanges :: (Ord a, Eq b, Monad m) => MealyM m (a, b) (Maybe a)
 detectChanges = (arr id &&& cache) >>> arr (uncurry retrieve)
