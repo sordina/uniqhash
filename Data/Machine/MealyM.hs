@@ -14,6 +14,7 @@ import qualified Control.Category as C
 import Control.Monad.Trans
 import Control.Monad.Identity
 
+-- The same as https://github.com/ivanperez-keera/dunai/blob/develop/src/Data/MonadicStreamFunction/Core.hs#L35
 newtype MealyM m a b = MealyM { runMealyM :: a -> m (b, MealyM m a b) }
 
 instance Functor m => Functor (MealyM m a) where
