@@ -8,6 +8,7 @@
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE ExistentialQuantification #-}
 
 -- https://github.com/acowley/concurrent-machines/issues/3
 
@@ -61,6 +62,18 @@ instance Monad m => Arrow (MealyM m) where
   first (MealyM m) = MealyM $ \(a,c) ->
     do (b, n) <- m a
        return ((b, c), (first n))
+
+arrM :: Functor m => (a -> m b) -> MealyM m a b
+arrM f = r where r = MealyM $ \a -> fmap (,r) (f a)
+
+-- TODO: Mealy -> MealyM
+
+scanMealy :: Monad m => (a -> b -> a) -> a -> MealyM m b a
+scanMealy f a = MealyM (\b -> let x = f a b in return (x, scanMealy f x))
+
+-- TODO
+scanMealyM :: Monad m => (a -> b -> m a) -> a -> MealyM m (k b) a
+scanMealyM = undefined
 
 autoMealyMImpl :: Monad m => MealyM m a b -> ProcessT m a b
 autoMealyMImpl = construct . go

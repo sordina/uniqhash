@@ -19,8 +19,8 @@ import System.IO
 import Data.Machine
 import System.IO.Machine
 import System.Directory (doesFileExist)
-import Debug.Trace
 import Data.Machine.MealyM
+import Control.Arrow
 
 import qualified Crypto.Hash         as CH
 import qualified Data.ByteString     as BS
@@ -37,32 +37,12 @@ pipeline = sourceHandle byLine stdin
         ~> sinkIO putStrLn
 
 changedFiles :: ProcessT IO FilePath FilePath
-changedFiles = splitProdPair echo hashPipe
-            ~> splitProdPair echo cache
+changedFiles = autoMealyM hashAndCache
             ~> interest
             ~> filterMaybe
 
-splitProdPair :: Monad m => ProcessT m a b -> ProcessT m a c -> ProcessT m a (b,c)
-splitProdPair = mergeProd echo
-
--- TODO: Cross-Product of misaligned yields and awaits
---
-mergeProd :: Monad m => MachineT m k a -> ProcessT m a b -> ProcessT m a c -> MachineT m k (b,c)
-mergeProd ma pb pc = MachineT $ do
-  bv <- runMachineT pb
-  cv <- runMachineT pc
-  case (bv, cv) of
-       (Stop, _) -> return Stop
-       (_, Stop) -> return Stop
-       (Yield bo bk, Yield co ck) -> return $ Yield (bo,co) (mergeProd ma bk ck)
-       (Await bf Refl bff, Await cf Refl cff) -> runMachineT ma >>= \u -> case u of
-          Stop          -> runMachineT $ mergeProd stopped bff cff
-          Yield o k     -> runMachineT $ mergeProd k (bf o) (cf o)
-          Await g kg fg -> return $ Await (\a -> mergeProd (g a) (MachineT (return bv)) (MachineT (return cv)))
-                                          kg
-                                          (mergeProd fg (MachineT (return bv)) (MachineT (return cv)))
-       (Await _bf Refl _bff, Yield _co _ck) -> trace "hybrid case 1" (return Stop)
-       (Yield _bo _bk, Await _cf Refl _cff) -> trace "hybrid case 2" (return Stop)
+hashAndCache :: MealyM IO FilePath ((FilePath, Maybe HASH), M.Map FilePath (Maybe HASH))
+hashAndCache = (arr id &&& hashPipe) >>> (arr id &&& cache)
 
 filterMaybe :: Process (Maybe a) a
 filterMaybe = repeatedly $ do
@@ -70,8 +50,8 @@ filterMaybe = repeatedly $ do
   case m of Just v  -> yield v
             Nothing -> return ()
 
-hashPipe :: ProcessT IO FilePath (Maybe HASH)
-hashPipe = autoM hash
+hashPipe :: MealyM IO FilePath (Maybe HASH)
+hashPipe = arrM hash
 
 hash :: FilePath -> IO (Maybe HASH)
 hash f = do
@@ -79,8 +59,8 @@ hash f = do
   if e then fmap (Just . CH.hash) (BS.readFile f)
        else return Nothing
 
-cache :: (Ord k) => Process (k, v) (M.Map k v)
-cache = scan (flip (uncurry M.insert)) M.empty
+cache :: (Monad m, Ord k) => MealyM m (k, v) (M.Map k v)
+cache = scanMealy (flip (uncurry M.insert)) M.empty
 
 interest :: Eq v => Process ((FilePath, v), M.Map FilePath v) (Maybe FilePath)
 interest = mapping (uncurry retrieve)
