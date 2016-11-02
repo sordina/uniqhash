@@ -69,7 +69,7 @@ scanMealy :: Monad m => (a -> b -> a) -> a -> MealyM m b a
 scanMealy f a = MealyM (\b -> return (a, scanMealy f (f a b)))
 
 scanMealyM :: Functor m => (a -> b -> m a) -> a -> MealyM m b a
-scanMealyM (f :: a -> b -> m a) a = MealyM $ \b ->
+scanMealyM f a = MealyM $ \b ->
   do x <- f a b
      return (a, scanMealyM f x)
 
