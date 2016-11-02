@@ -83,6 +83,13 @@ autoMealyMImpl = construct . go
     yield b
     go m
 
+embedMealyM :: Monad m => MealyM m a b -> [a] -> m [b]
+embedMealyM _  []     = return []
+embedMealyM sf (a:as) = do
+  (b, sf') <- runMealyM sf a
+  bs       <- embedMealyM sf' as
+  return (b:bs)
+
 class AutomatonM x where
   autoMealyM :: Monad m => x m a b -> ProcessT m a b
 
