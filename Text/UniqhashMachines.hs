@@ -37,15 +37,26 @@ pipeline = sourceHandle byLine stdin
         ~> sinkIO putStrLn
 
 changedFiles :: ProcessT IO FilePath FilePath
-changedFiles = autoMealyM hashAndCache
-            ~> interest
-            ~> filterMaybe
+changedFiles = autoMealyM (hashAndCache >>> detectChanges) ~> filterJust
 
-hashAndCache :: MealyM IO FilePath ((FilePath, Maybe HASH), M.Map FilePath (Maybe HASH))
-hashAndCache = (arr id &&& hashPipe) >>> (arr id &&& cache)
+hashAndCache :: MealyM IO FilePath (FilePath, Maybe HASH)
+hashAndCache = arr id &&& hashPipe
 
-filterMaybe :: Process (Maybe a) a
-filterMaybe = repeatedly $ do
+detectChanges :: (Ord a, Eq b, Monad m) => MealyM m (a, b) (Maybe a)
+detectChanges = (arr id &&& cache) >>> arr (uncurry retrieve)
+
+-- Note: Unused in main
+emitChanges :: (Ord a, Eq b) => Process (a, b) a
+emitChanges = autoMealyM detectChanges ~> filterJust
+
+prop_detectChanges :: Bool
+prop_detectChanges = expected == result
+  where
+  expected = [1,1,2]
+  result   = run $ source [(1 :: Int,'a'),(1,'a'),(1,'b'),(1,'b'),(2,'a'),(1,'b'),(2,'a')] ~> emitChanges
+
+filterJust :: Process (Maybe a) a
+filterJust = repeatedly $ do
   m <- await
   case m of Just v  -> yield v
             Nothing -> return ()
@@ -62,9 +73,6 @@ hash f = do
 cache :: (Monad m, Ord k) => MealyM m (k, v) (M.Map k v)
 cache = scanMealy (flip (uncurry M.insert)) M.empty
 
-interest :: Eq v => Process ((FilePath, v), M.Map FilePath v) (Maybe FilePath)
-interest = mapping (uncurry retrieve)
-
-retrieve :: Eq v => (FilePath, v) -> M.Map FilePath v -> Maybe FilePath
+retrieve :: (Ord k, Eq v) => (k, v) -> M.Map k v -> Maybe k
 retrieve (k,v) m | M.lookup k m == Just v = Nothing
 retrieve (k,_) _                          = Just k
