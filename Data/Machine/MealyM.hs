@@ -22,7 +22,6 @@ module Data.Machine.MealyM where
 import Data.Machine
 import Control.Arrow
 import Data.Pointed
-import Data.Machine.Mealy
 import qualified Control.Category as C
 import Control.Monad.Trans
 
@@ -51,7 +50,7 @@ instance Monad m => Monad (MealyM m a) where
   return = pure
   (>>=) :: MealyM m a b -> (b -> MealyM m a c) -> MealyM m a c
   (MealyM g :: MealyM m a b) >>= (f :: b -> MealyM m a c) = MealyM $ \(a :: a) ->
-    do (b, MealyM h) <- g a
+    do (b, MealyM _h) <- g a
        runMealyM (f b) a
 
 instance Monad m => C.Category (MealyM m) where
@@ -65,19 +64,9 @@ instance Monad m => C.Category (MealyM m) where
 instance Monad m => Arrow (MealyM m) where
   {-# INLINE arr #-}
   arr f = r where r = MealyM (\a -> return (f a, r))
-
-{-
-newtype MealyM m a b = MealyM { runMealyM :: a -> m (b, MealyM m a b) }
-
-instance Arrow Mealy where
-  arr f = r where r = Mealy (\a -> (f a, r))
-  {-# INLINE arr #-}
-  first (Mealy m) = Mealy $ \(a,c) -> case m a of
-    (b, n) -> ((b, c), first n)
-
-class C.Category a => Arrow (a :: * -> * -> *) where
-    arr :: (b -> c) -> a b c
--}
+  first (MealyM m) = MealyM $ \(a,c) ->
+    do (b, n) <- m a
+       return ((b, c), (first n))
 
 autoMealyM :: Monad m => MealyM m a b -> ProcessT m a b
 autoMealyM = construct . go
