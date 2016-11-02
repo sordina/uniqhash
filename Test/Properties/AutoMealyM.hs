@@ -3,6 +3,8 @@ module Test.Properties.AutoMealyM where
 import Data.Machine
 import Data.Machine.MealyM
 import Control.Arrow
+import Control.Monad.Identity
+import qualified Control.Category as C
 
 prop_arr_1 :: Bool
 prop_arr_1 = expected == result
@@ -14,6 +16,12 @@ prop_arr_1 = expected == result
 prop_scan_1 :: Bool
 prop_scan_1 = expected == result
   where
-  result = run $ source items ~> autoMealyM (scanMealy (+) 1) ~> taking 9
-  expected = take 9 $ scanl (+) 1 items
-  items = [1..10]
+  result   = run $ source items ~> autoMealyM (scanMealy (+) 1) ~> taking 9
+  expected = take 9 $ scanl (+) (1 :: Int) items
+  items    = [1..10]
+
+prop_length_id :: [()] -> Bool
+prop_length_id xs = expected == result
+  where
+  expected = length xs
+  result   = length $ run $ source xs ~> autoMealyM (C.id :: MealyM Identity a a)
