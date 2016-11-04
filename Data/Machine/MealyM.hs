@@ -64,7 +64,6 @@ arrPure = arr
 arrM :: Functor m => (a -> m b) -> MealyM m a b
 arrM f = r where r = MealyM $ \a -> fmap (,r) (f a)
 
--- TODO: Mealy -> MealyM
 upgrade :: Monad m => Mealy a b -> MealyM m a b
 upgrade (Mealy f) = MealyM $ \a ->
   do let (r, g) = f a
