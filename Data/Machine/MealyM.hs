@@ -65,6 +65,10 @@ arrM :: Functor m => (a -> m b) -> MealyM m a b
 arrM f = r where r = MealyM $ \a -> fmap (,r) (f a)
 
 -- TODO: Mealy -> MealyM
+upgrade :: Monad m => Mealy a b -> MealyM m a b
+upgrade (Mealy f) = MealyM $ \a ->
+  do let (r, g) = f a
+     return (r, upgrade g)
 
 scanMealy :: Monad m => (a -> b -> a) -> a -> MealyM m b a
 scanMealy f a = MealyM (\b -> return (a, scanMealy f (f a b)))
