@@ -23,3 +23,9 @@ digraph {
 ## Binaries
 
 * [uniqhash-1.1.0.0-MacOSX-10.7.5-11G63b.zip](http://sordina.binaries.s3.amazonaws.com/uniqhash-1.1.0.0-MacOSX-10.7.5-11G63b.zip)
+
+## Other Packages of Interest
+
+* [Dunai](https://github.com/ivanperez-keera/dunai/blob/develop/src/Data/MonadicStreamFunction/Core.hs#L35)
+* [Auto](https://hackage.haskell.org/package/auto-0.4.3.0/docs/Control-Auto.html)
+* [Varying](https://hackage.haskell.org/package/varying-0.6.0.0/docs/Control-Varying-Core.html)
