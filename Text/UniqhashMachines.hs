@@ -49,12 +49,6 @@ detectChanges = (arr id &&& cache) >>> arr (uncurry retrieve)
 emitChanges :: (Ord a, Eq b) => Process (a, b) a
 emitChanges = autoMealyM detectChanges ~> filterJust
 
-prop_detectChanges :: Bool
-prop_detectChanges = expected == result
-  where
-  expected = [1,1,2]
-  result   = run $ source [(1 :: Int,'a'),(1,'a'),(1,'b'),(1,'b'),(2,'a'),(1,'b'),(2,'a')] ~> emitChanges
-
 filterJust :: Process (Maybe a) a
 filterJust = repeatedly $ do
   m <- await
