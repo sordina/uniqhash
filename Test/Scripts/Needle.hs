@@ -22,6 +22,7 @@ Like Magic:
 
 n :: MealyM IO FilePath (Maybe FilePath)
 n = [nd|
+
   }===\================\
       \                { tuple }==\=============\
       \=={ hashPipe }==/          \             { get }==>
