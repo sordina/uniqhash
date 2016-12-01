@@ -1,6 +1,11 @@
 
 resolver: lts-7.9
-packages: [ '.', '/Users/lyndon/Code/needle' ]
+packages:
+  - location: '.'
+  - location:
+      git: 'https://github.com/ekmett/machines'
+      commit: '67392db'
+  - location: '/Users/lyndon/Code/needle'
 extra-deps: [ machines-io-0.2.0.13, parsec-extra-0.2.0.0 ]
 flags: {}
 extra-package-dbs: []
