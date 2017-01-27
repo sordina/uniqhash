@@ -6,21 +6,23 @@
 module Needle where
 
 import Control.Arrow.Needle
-import Data.Machine.MealyM
+import Data.Machine.MealyT
 import Text.UniqhashMachines
-
+import Data.Machine
+import System.IO
+import System.IO.Machine
 import qualified Data.Map as M
 
 {-|
 
 Like Magic:
 
-*Needle> embedMealyM n (words "a b c a a a")
+*Needle> embedMealyT n (words "a b c a a a")
 [Just "a",Just "b",Just "c",Nothing,Nothing,Nothing]
 
 -}
 
-n :: MealyM IO FilePath (Maybe FilePath)
+n :: MealyT IO FilePath (Maybe FilePath)
 n = [nd|
 
   }===\================\
@@ -34,3 +36,6 @@ tuple = arr (uncurry (,))
 
 get :: (Arrow a, Ord k, Eq v) => a ((k, v), M.Map k v) (Maybe k)
 get = arr (uncurry retrieve)
+
+example :: IO ()
+example = runT_ $ sourceHandle byLine stdin ~> autoT n ~> sinkIO print
